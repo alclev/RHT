@@ -1,0 +1,31 @@
+[INFO] Experiment configuration: 
+Node_id: 3
+Global_id: 17
+System size: 5
+Port: 6000
+Num_ops: 1000
+Key_range: 1000000
+Replication_degree: 5
+Num_threads: 8
+Verbose: false
+
+[INFO] Generating workload...
+[INFO] I am node 3 with global id 17
+[INFO] Server listening on port 6000
+[INFO] Attempting to connect to eris.cse.lehigh.edu...
+[INFO] Attempting to connect to mercury.cse.lehigh.edu...
+[INFO] Attempting to connect to nix.cse.lehigh.edu...
+[INFO] Attempting to connect to saturn.cse.lehigh.edu...
+[INFO] Received all connections.
+[INFO] Successfully established network connections.
+[INFO] Node 3 thread 5 finished workload
+[INFO] Node 3 thread 3 finished workload
+[INFO] Node 3 thread 7 finished workload
+[INFO] Node 3 thread 6 finished workload
+[INFO] Node 3 thread 4 finished workload
+[INFO] Node 3 thread 0 finished workload
+[INFO] Node 3 thread 2 finished workload
+[INFO] Node 3 thread 1 finished workload
+[INFO] Throughput: 306.314 ops/sec | Avg latency: 3433.74 us
+[INFO] Done. Cleaning up...
+[INFO] Done. Exiting...
