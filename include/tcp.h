@@ -8,6 +8,7 @@
 
 #include <atomic>
 #include <fstream>
+#include <mutex>
 #include <thread>
 #include <unordered_map>
 #include <vector>
@@ -67,6 +68,9 @@ public:
             LOGGING_FATAL("Failed to connect to {}: {}", host, strerror(errno));
           std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
+
+        // send our global id so receiver can map this fd to us
+        send_init(fd, init_msg{cfg_.global_id, (uint64_t)i});
         peer_fds_[id].push_back(fd);
       }
 
@@ -116,10 +120,18 @@ private:
       while (true) {
         sockaddr_in client_addr{};
         socklen_t len = sizeof(client_addr);
-        int fd =
-            accept(server_fd, reinterpret_cast<sockaddr *>(&client_addr), &len);
+        int fd = accept(server_fd, reinterpret_cast<sockaddr *>(&client_addr), &len);
         if (fd < 0)
           continue;
+
+        // read who connected so we can map fd to peer global id
+        init_msg msg;
+        recv_init(fd, msg);
+
+        {
+          std::lock_guard<std::mutex> lock(mu_);
+          peer_fds_[(int)msg.node_id].push_back(fd);
+        }
         num_conns_.fetch_add(1);
       }
     }).detach();
@@ -128,4 +140,5 @@ private:
   config_t cfg_;
   std::unordered_map<int, std::vector<int>> peer_fds_;
   std::atomic<int> num_conns_{0};
+  std::mutex mu_;
 };

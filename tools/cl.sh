@@ -56,10 +56,11 @@ function create_env() {
 	# entire sunlab
 	MACHINES=("ariel" "caliban" "callisto" "ceres" "chiron" "cupid" "eris" "europa" "hydra" "iapetus" "io" "mars" "mercury" "neptune" "nereid" "nix" "orcus" "phobos" "puck" "saturn" "triton" "varda" "vesta" "xena")
 	outfile="$HOME/sunlab.env"
-	rm -rf $outfile; touch $outfile
+	rm -rf $outfile
+	touch $outfile
 	global_id=0
 	for m in ${MACHINES[*]}; do
-		echo -e "${global_id} ${m}.${DOMAIN}" >> ${outfile}
+		echo -e "${global_id} ${m}.${DOMAIN}" >>${outfile}
 		global_id=$((global_id + 1))
 	done
 }
@@ -86,19 +87,19 @@ function cl_run() {
 	# Populate node list
 	NODE_LST=""
 	for i in "${!MACHINES[@]}"; do
-			host="${MACHINES[$i]}"
-			global_id=$(grep "$host" ~/sunlab.env | awk '{print $1}')
-			if [[ -n "$NODE_LST" ]]; then
-					NODE_LST+=","
-			fi
-			NODE_LST+="$global_id"
+		host="${MACHINES[$i]}"
+		global_id=$(grep "$host" ~/sunlab.env | awk '{print $1}')
+		if [[ -n "$NODE_LST" ]]; then
+			NODE_LST+=","
+		fi
+		NODE_LST+="$global_id"
 	done
 
 	for i in "${!MACHINES[@]}"; do
 		host="${MACHINES[$i]}"
 		global_id=$(grep "$host" ~/sunlab.env | awk '{print $1}')
 		ARGS="${i} ${global_id} ${NODE_LST} ${NUM_MACHINES} -p ${TCP_PORT} -t ${NUM_THREADS} -k ${KEY_RANGE} -r ${REP_DEGREE}"
-		# gdb -ex \"r\" --args 
+		# gdb -ex \"r\" --args
 		CMD="./${EXE_NAME} ${ARGS}"
 		echo "$CMD"
 		cat >>"$tmp_screen" <<EOF
@@ -179,7 +180,7 @@ function do_all {
 function reset-all() {
 	last_valid_index=$((${#MACHINES[@]} - 1)) # The 0-indexed number of nodes
 	for i in $(seq 0 ${last_valid_index}); do
-		ssh ${USER}@${MACHINES[$i]}.${DOMAIN} "killall -9 -u $USER" &
+		ssh ${USER}@${MACHINES[$i]}.${DOMAIN} "killall -9 -u abc324" &
 	done
 	wait
 	echo "Nodes have been reset."
@@ -193,7 +194,6 @@ function reset() {
 	wait
 	echo "Nodes have been reset."
 }
-
 
 # Get the important stuff out of the command-line args
 cmd=$1   # The requested command
@@ -217,10 +217,12 @@ elif [[ "$cmd" == "build-run" && "$count" -eq 3 ]]; then
 	sudo docker run -e MODE="$2" --privileged --rm -v $(pwd):/root --name mu -it rht:latest
 	# if [[ "$2" == "debug" ]]; then
 	# 	make DEBUG=1
-	# else 
+	# else
 	# 	make
 	# fi
 	cl_run "$3"
+elif [[ "$cmd" == "run" && "$count" -eq 2 ]]; then
+	cl_run "$2"
 elif [[ "$cmd" == "connect" && "$count" -eq 1 ]]; then
 	cl_connect
 elif [[ "$cmd" == "reset" && "$count" -eq 2 ]]; then
@@ -235,7 +237,7 @@ elif [[ "$cmd" == "find-machines" && "$count" -eq 1 ]]; then
 	do_all "echo -e \"\$(hostname)\n\"; ss -tuln | grep ${TCP_PORT}"
 elif [[ "$cmd" == "run-experiment" && "$count" -eq 2 ]]; then
 	mkdir -p results
-	echo "Throughput,AvgLatency,NumThreads,RepDegree,KeyRange,SystemSize" > results/exp_1.csv
+	echo "Throughput,AvgLatency,NumThreads,RepDegree,KeyRange,SystemSize" >results/exp_1.csv
 	REP_DEGREE=1
 	# Experiment 1: Vary the key range
 	echo "Starting experiment #1..."
@@ -249,12 +251,12 @@ elif [[ "$cmd" == "run-experiment" && "$count" -eq 2 ]]; then
 			tmp_file=$(mktemp)
 			scp ${USER}@${MACHINES[0]}.${DOMAIN}:metrics.csv $tmp_file
 			# append the second line of tmp file to exp_1.csv
-			tail -n 1 $tmp_file >> results/exp_1.csv
+			tail -n 1 $tmp_file >>results/exp_1.csv
 			do_all "lsof -ti :${TCP_PORT} | xargs kill -9"
 			rm $tmp_file
 		done
 	done
-	echo "Throughput,AvgLatency,NumThreads,RepDegree,KeyRange,SystemSize" > results/exp_2.csv
+	echo "Throughput,AvgLatency,NumThreads,RepDegree,KeyRange,SystemSize" >results/exp_2.csv
 	# Experiment 2: Vary the number of nodes
 	KEY_RANGE=1000000
 	NUM_THREADS=8
@@ -267,37 +269,37 @@ elif [[ "$cmd" == "run-experiment" && "$count" -eq 2 ]]; then
 		cl_run "$2"
 		tmp_file=$(mktemp)
 		scp ${USER}@${MACHINES[0]}.${DOMAIN}:metrics.csv $tmp_file
-		tail -n 1 $tmp_file >> results/exp_2.csv
+		tail -n 1 $tmp_file >>results/exp_2.csv
 		do_all "lsof -ti :${TCP_PORT} | xargs kill -9"
 		rm $tmp_file
 	done
-	echo "Throughput,AvgLatency,NumThreads,RepDegree,KeyRange,SystemSize" > results/exp_3.csv
+	echo "Throughput,AvgLatency,NumThreads,RepDegree,KeyRange,SystemSize" >results/exp_3.csv
 	# Experiment 3: Vary the number of threads
 	KEY_RANGE=1000000
 	NUM_THREADS=8
 	REP_DEGREE=1
 	echo "Starting experiment #3..."
 	for n in $(seq 1 12); do
-    NUM_THREADS=$n
+		NUM_THREADS=$n
 		echo "Launching experiment with ${NUM_THREADS} threads..."
 		cl_run "$2"
 		tmp_file=$(mktemp)
 		scp ${USER}@${MACHINES[0]}.${DOMAIN}:metrics.csv $tmp_file
-		tail -n 1 $tmp_file >> results/exp_3.csv
+		tail -n 1 $tmp_file >>results/exp_3.csv
 		do_all "lsof -ti :${TCP_PORT} | xargs kill -9"
 		rm $tmp_file
 	done
-	echo "Throughput,AvgLatency,NumThreads,RepDegree,KeyRange,SystemSize" > results/exp_4.csv
+	echo "Throughput,AvgLatency,NumThreads,RepDegree,KeyRange,SystemSize" >results/exp_4.csv
 	# Experiment 4: Vary the replication degree
 	echo "Starting experiment #4..."
 	NUM_THREADS=8
 	for n in $(seq 1 5); do
-    REP_DEGREE=$n
+		REP_DEGREE=$n
 		echo "Launching experiment with replication degree ${REP_DEGREE}..."
 		cl_run "$2"
 		tmp_file=$(mktemp)
 		scp ${USER}@${MACHINES[0]}.${DOMAIN}:metrics.csv $tmp_file
-		tail -n 1 $tmp_file >> results/exp_4.csv
+		tail -n 1 $tmp_file >>results/exp_4.csv
 		do_all "lsof -ti :${TCP_PORT} | xargs kill -9"
 		rm $tmp_file
 	done

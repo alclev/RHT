@@ -16,8 +16,32 @@ Verbose: false
 [INFO] Connecting to mercury.cse.lehigh.edu...
 [INFO] Connecting to phobos.cse.lehigh.edu...
 [INFO] Connecting to saturn.cse.lehigh.edu...
+[DEBUG] Waiting for connections... 6/8 (include/tcp.h:83)
 [INFO] All connections established.
-[INFO] IM HERE
+[INFO] Node id: 17
+sd: 14
+sd: 15
+sd: 8
+sd: 17
+Node id: 19
+sd: 16
+sd: 19
+sd: 18
+sd: 20
+Node id: 12
+sd: 4
+sd: 5
+sd: 12
+sd: 13
+Node id: 6
+sd: 6
+sd: 7
+sd: 10
+sd: 11
+
 [INFO] Successfully established network connections.
+[INFO] Waiting for op from node 0, fd 6
+[INFO] Received op, sending ack
+[INFO] Ack sent
 [INFO] Done. Cleaning up...
 [INFO] Done. Exiting...

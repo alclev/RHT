@@ -1,4 +1,11 @@
 ==> ../logs/log_0.txt <==
+[INFO] Experiment configuration: 
+Node_id: 0
+Global_id: 6
+System size: 5
+Port: 6000
+Num_ops: 1000000
+Key_range: 100000
 Replication_degree: 1
 Num_threads: 8
 Verbose: false
@@ -8,9 +15,58 @@ Verbose: false
 [INFO] Listening on port 6000
 [INFO] Connecting to mercury.cse.lehigh.edu...
 [INFO] Connecting to nix.cse.lehigh.edu...
-[FATAL] Failed to connect to nix.cse.lehigh.edu: Connection refused
+[INFO] Connecting to phobos.cse.lehigh.edu...
+[INFO] Connecting to saturn.cse.lehigh.edu...
+[DEBUG] Waiting for connections... 4/8 (include/tcp.h:83)
+[INFO] All connections established.
+[INFO] Node id: 17
+sd: 12
+sd: 15
+sd: 14
+sd: 18
+Node id: 19
+sd: 16
+sd: 17
+sd: 19
+sd: 20
+Node id: 12
+sd: 4
+sd: 5
+sd: 8
+sd: 9
+Node id: 15
+sd: 10
+sd: 11
+sd: 6
+sd: 13
+
+[INFO] Successfully established network connections.
+[INFO] Sending to local id 2, fd 10
+[INFO] Sent to local id 2
+[INFO] Sending to local id 1, fd 4
+[INFO] Sent to local id 1
+[INFO] Sending to local id 3, fd 12
+[INFO] Sent to local id 3
+[INFO] Sending to local id 4, fd 16
+[INFO] Sent to local id 4
+[INFO] Waiting for ack from local id 2, fd 10
+[INFO] Received ack from local id 2
+[INFO] Waiting for ack from local id 1, fd 4
+[INFO] Received ack from local id 1
+[INFO] Waiting for ack from local id 3, fd 12
+[INFO] Received ack from local id 3
+[INFO] Waiting for ack from local id 4, fd 16
+[INFO] Received ack from local id 4
+[INFO] Done. Cleaning up...
+[INFO] Done. Exiting...
 
 ==> ../logs/log_1.txt <==
+[INFO] Experiment configuration: 
+Node_id: 1
+Global_id: 12
+System size: 5
+Port: 6000
+Num_ops: 1000000
 Key_range: 100000
 Replication_degree: 1
 Num_threads: 8
@@ -20,9 +76,46 @@ Verbose: false
 [INFO] I am node 1 with global id 12
 [INFO] Listening on port 6000
 [INFO] Connecting to eris.cse.lehigh.edu...
-[FATAL] Failed to connect to eris.cse.lehigh.edu: Connection refused
+[INFO] Connecting to nix.cse.lehigh.edu...
+[INFO] Connecting to phobos.cse.lehigh.edu...
+[INFO] Connecting to saturn.cse.lehigh.edu...
+[DEBUG] Waiting for connections... 4/8 (include/tcp.h:83)
+[INFO] All connections established.
+[INFO] Node id: 19
+sd: 16
+sd: 17
+sd: 19
+sd: 20
+Node id: 17
+sd: 10
+sd: 15
+sd: 14
+sd: 18
+Node id: 6
+sd: 6
+sd: 7
+sd: 4
+sd: 11
+Node id: 15
+sd: 8
+sd: 9
+sd: 12
+sd: 13
+
+[INFO] Successfully established network connections.
+[INFO] Waiting for op from node 0, fd 6
+[INFO] Received op, sending ack
+[INFO] Ack sent
+[INFO] Done. Cleaning up...
+[INFO] Done. Exiting...
 
 ==> ../logs/log_2.txt <==
+[INFO] Experiment configuration: 
+Node_id: 2
+Global_id: 15
+System size: 5
+Port: 6000
+Num_ops: 1000000
 Key_range: 100000
 Replication_degree: 1
 Num_threads: 8
@@ -32,9 +125,46 @@ Verbose: false
 [INFO] I am node 2 with global id 15
 [INFO] Listening on port 6000
 [INFO] Connecting to eris.cse.lehigh.edu...
-[FATAL] Failed to connect to eris.cse.lehigh.edu: Connection refused
+[INFO] Connecting to mercury.cse.lehigh.edu...
+[INFO] Connecting to phobos.cse.lehigh.edu...
+[INFO] Connecting to saturn.cse.lehigh.edu...
+[DEBUG] Waiting for connections... 6/8 (include/tcp.h:83)
+[INFO] All connections established.
+[INFO] Node id: 17
+sd: 14
+sd: 15
+sd: 8
+sd: 17
+Node id: 19
+sd: 16
+sd: 19
+sd: 18
+sd: 20
+Node id: 12
+sd: 4
+sd: 5
+sd: 12
+sd: 13
+Node id: 6
+sd: 6
+sd: 7
+sd: 10
+sd: 11
+
+[INFO] Successfully established network connections.
+[INFO] Waiting for op from node 0, fd 6
+[INFO] Received op, sending ack
+[INFO] Ack sent
+[INFO] Done. Cleaning up...
+[INFO] Done. Exiting...
 
 ==> ../logs/log_3.txt <==
+[INFO] Experiment configuration: 
+Node_id: 3
+Global_id: 17
+System size: 5
+Port: 6000
+Num_ops: 1000000
 Key_range: 100000
 Replication_degree: 1
 Num_threads: 8
@@ -44,9 +174,46 @@ Verbose: false
 [INFO] I am node 3 with global id 17
 [INFO] Listening on port 6000
 [INFO] Connecting to eris.cse.lehigh.edu...
-[FATAL] Failed to connect to eris.cse.lehigh.edu: Connection refused
+[INFO] Connecting to mercury.cse.lehigh.edu...
+[INFO] Connecting to nix.cse.lehigh.edu...
+[INFO] Connecting to saturn.cse.lehigh.edu...
+[DEBUG] Waiting for connections... 6/8 (include/tcp.h:83)
+[INFO] All connections established.
+[INFO] Node id: 6
+sd: 8
+sd: 9
+sd: 12
+sd: 13
+Node id: 15
+sd: 4
+sd: 5
+sd: 16
+sd: 17
+Node id: 19
+sd: 18
+sd: 19
+sd: 11
+sd: 20
+Node id: 12
+sd: 6
+sd: 7
+sd: 14
+sd: 15
+
+[INFO] Successfully established network connections.
+[INFO] Waiting for op from node 0, fd 8
+[INFO] Received op, sending ack
+[INFO] Ack sent
+[INFO] Done. Cleaning up...
+[INFO] Done. Exiting...
 
 ==> ../logs/log_4.txt <==
+[INFO] Experiment configuration: 
+Node_id: 4
+Global_id: 19
+System size: 5
+Port: 6000
+Num_ops: 1000000
 Key_range: 100000
 Replication_degree: 1
 Num_threads: 8
@@ -56,4 +223,34 @@ Verbose: false
 [INFO] I am node 4 with global id 19
 [INFO] Listening on port 6000
 [INFO] Connecting to eris.cse.lehigh.edu...
-[FATAL] Failed to connect to eris.cse.lehigh.edu: Connection refused
+[INFO] Connecting to mercury.cse.lehigh.edu...
+[INFO] Connecting to nix.cse.lehigh.edu...
+[INFO] Connecting to phobos.cse.lehigh.edu...
+[INFO] All connections established.
+[INFO] Node id: 15
+sd: 10
+sd: 12
+sd: 18
+sd: 19
+Node id: 17
+sd: 8
+sd: 9
+sd: 20
+sd: 21
+Node id: 12
+sd: 4
+sd: 5
+sd: 16
+sd: 17
+Node id: 6
+sd: 6
+sd: 7
+sd: 14
+sd: 15
+
+[INFO] Successfully established network connections.
+[INFO] Waiting for op from node 0, fd 6
+[INFO] Received op, sending ack
+[INFO] Ack sent
+[INFO] Done. Cleaning up...
+[INFO] Done. Exiting...

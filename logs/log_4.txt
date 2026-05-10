@@ -17,7 +17,30 @@ Verbose: false
 [INFO] Connecting to nix.cse.lehigh.edu...
 [INFO] Connecting to phobos.cse.lehigh.edu...
 [INFO] All connections established.
-[INFO] IM HERE
+[INFO] Node id: 15
+sd: 10
+sd: 12
+sd: 18
+sd: 19
+Node id: 17
+sd: 8
+sd: 9
+sd: 20
+sd: 21
+Node id: 12
+sd: 4
+sd: 5
+sd: 16
+sd: 17
+Node id: 6
+sd: 6
+sd: 7
+sd: 14
+sd: 15
+
 [INFO] Successfully established network connections.
+[INFO] Waiting for op from node 0, fd 6
+[INFO] Received op, sending ack
+[INFO] Ack sent
 [INFO] Done. Cleaning up...
 [INFO] Done. Exiting...
