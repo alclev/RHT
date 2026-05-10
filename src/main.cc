@@ -69,10 +69,12 @@ int main(int argc, char** argv) {
     nodes.push_back(std::stoi(item));
   }
 
+  const int conns_per_node = 2;
   config_t cfg{program.get<uint64_t>("id"),
                program.get<uint64_t>("global_id"),
                nodes,
                program.get<uint64_t>("system_size"),
+               conns_per_node,
                program.get<uint16_t>("-p"),
                program.get<uint64_t>("-n"),
                program.get<uint64_t>("-k"),

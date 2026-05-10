@@ -1,84 +1,59 @@
 ==> ../logs/log_0.txt <==
-[INFO] Attempting to connect to phobos.cse.lehigh.edu...
-[INFO] Attempting to connect to saturn.cse.lehigh.edu...
-[INFO] Received all connections.
-[INFO] Successfully established network connections.
-[INFO] Node 0 thread 3 finished workload
-[INFO] Node 0 thread 7 finished workload
-[INFO] Node 0 thread 4 finished workload
-[INFO] Node 0 thread 0 finished workload
-[INFO] Node 0 thread 5 finished workload
-[INFO] Node 0 thread 1 finished workload
-[INFO] Node 0 thread 6 finished workload
-[INFO] Node 0 thread 2 finished workload
-[INFO] Throughput: 307.622 ops/sec | Avg latency: 3418.54 us
-[INFO] Done. Cleaning up...
-[INFO] Done. Exiting...
+Replication_degree: 1
+Num_threads: 8
+Verbose: false
+
+[INFO] Generating workload...
+[INFO] I am node 0 with global id 6
+[INFO] Listening on port 6000
+[INFO] Connecting to mercury.cse.lehigh.edu...
+[INFO] Connecting to nix.cse.lehigh.edu...
+[FATAL] Failed to connect to nix.cse.lehigh.edu: Connection refused
 
 ==> ../logs/log_1.txt <==
-[INFO] Attempting to connect to phobos.cse.lehigh.edu...
-[INFO] Attempting to connect to saturn.cse.lehigh.edu...
-[INFO] Received all connections.
-[INFO] Successfully established network connections.
-[INFO] Node 1 thread 7 finished workload
-[INFO] Node 1 thread 4 finished workload
-[INFO] Node 1 thread 1 finished workload
-[INFO] Node 1 thread 3 finished workload
-[INFO] Node 1 thread 6 finished workload
-[INFO] Node 1 thread 0 finished workload
-[INFO] Node 1 thread 5 finished workload
-[INFO] Node 1 thread 2 finished workload
-[INFO] Throughput: 36957.6 ops/sec | Avg latency: 192.576 us
-[INFO] Done. Cleaning up...
-[INFO] Done. Exiting...
+Key_range: 100000
+Replication_degree: 1
+Num_threads: 8
+Verbose: false
+
+[INFO] Generating workload...
+[INFO] I am node 1 with global id 12
+[INFO] Listening on port 6000
+[INFO] Connecting to eris.cse.lehigh.edu...
+[FATAL] Failed to connect to eris.cse.lehigh.edu: Connection refused
 
 ==> ../logs/log_2.txt <==
-[INFO] Attempting to connect to phobos.cse.lehigh.edu...
-[INFO] Attempting to connect to saturn.cse.lehigh.edu...
-[INFO] Received all connections.
-[INFO] Successfully established network connections.
-[INFO] Node 2 thread 0 finished workload
-[INFO] Node 2 thread 6 finished workload
-[INFO] Node 2 thread 1 finished workload
-[INFO] Node 2 thread 2 finished workload
-[INFO] Node 2 thread 4 finished workload
-[INFO] Node 2 thread 7 finished workload
-[INFO] Node 2 thread 3 finished workload
-[INFO] Node 2 thread 5 finished workload
-[INFO] Throughput: 13364.7 ops/sec | Avg latency: 287.394 us
-[INFO] Done. Cleaning up...
-[INFO] Done. Exiting...
+Key_range: 100000
+Replication_degree: 1
+Num_threads: 8
+Verbose: false
+
+[INFO] Generating workload...
+[INFO] I am node 2 with global id 15
+[INFO] Listening on port 6000
+[INFO] Connecting to eris.cse.lehigh.edu...
+[FATAL] Failed to connect to eris.cse.lehigh.edu: Connection refused
 
 ==> ../logs/log_3.txt <==
-[INFO] Attempting to connect to nix.cse.lehigh.edu...
-[INFO] Attempting to connect to saturn.cse.lehigh.edu...
-[INFO] Received all connections.
-[INFO] Successfully established network connections.
-[INFO] Node 3 thread 5 finished workload
-[INFO] Node 3 thread 3 finished workload
-[INFO] Node 3 thread 7 finished workload
-[INFO] Node 3 thread 6 finished workload
-[INFO] Node 3 thread 4 finished workload
-[INFO] Node 3 thread 0 finished workload
-[INFO] Node 3 thread 2 finished workload
-[INFO] Node 3 thread 1 finished workload
-[INFO] Throughput: 306.314 ops/sec | Avg latency: 3433.74 us
-[INFO] Done. Cleaning up...
-[INFO] Done. Exiting...
+Key_range: 100000
+Replication_degree: 1
+Num_threads: 8
+Verbose: false
+
+[INFO] Generating workload...
+[INFO] I am node 3 with global id 17
+[INFO] Listening on port 6000
+[INFO] Connecting to eris.cse.lehigh.edu...
+[FATAL] Failed to connect to eris.cse.lehigh.edu: Connection refused
 
 ==> ../logs/log_4.txt <==
-[INFO] Attempting to connect to nix.cse.lehigh.edu...
-[INFO] Attempting to connect to phobos.cse.lehigh.edu...
-[INFO] Received all connections.
-[INFO] Successfully established network connections.
-[INFO] Node 4 thread 5 finished workload
-[INFO] Node 4 thread 6 finished workload
-[INFO] Node 4 thread 4 finished workload
-[INFO] Node 4 thread 1 finished workload
-[INFO] Node 4 thread 0 finished workload
-[INFO] Node 4 thread 3 finished workload
-[INFO] Node 4 thread 7 finished workload
-[INFO] Node 4 thread 2 finished workload
-[INFO] Throughput: 14105.6 ops/sec | Avg latency: 230.089 us
-[INFO] Done. Cleaning up...
-[INFO] Done. Exiting...
+Key_range: 100000
+Replication_degree: 1
+Num_threads: 8
+Verbose: false
+
+[INFO] Generating workload...
+[INFO] I am node 4 with global id 19
+[INFO] Listening on port 6000
+[INFO] Connecting to eris.cse.lehigh.edu...
+[FATAL] Failed to connect to eris.cse.lehigh.edu: Connection refused

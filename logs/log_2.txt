@@ -2,12 +2,22 @@
 Node_id: 2
 Global_id: 15
 System size: 5
-Port: 16960
-Num_ops: 100000
-Key_range: 1
-Replication_degree: 8
-Num_threads: 0
+Port: 6000
+Num_ops: 1000000
+Key_range: 100000
+Replication_degree: 1
+Num_threads: 8
 Verbose: false
 
 [INFO] Generating workload...
 [INFO] I am node 2 with global id 15
+[INFO] Listening on port 6000
+[INFO] Connecting to eris.cse.lehigh.edu...
+[INFO] Connecting to mercury.cse.lehigh.edu...
+[INFO] Connecting to phobos.cse.lehigh.edu...
+[INFO] Connecting to saturn.cse.lehigh.edu...
+[INFO] All connections established.
+[INFO] IM HERE
+[INFO] Successfully established network connections.
+[INFO] Done. Cleaning up...
+[INFO] Done. Exiting...

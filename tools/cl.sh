@@ -46,7 +46,7 @@ function check_ibv {
 #  Configure the set of remote MACHINES
 function cl_install_deps() {
 	echo "Setup initial connection"
-	ssh-add '/home/abc324/.keys/sunlab'
+	ssh-add "$HOME/.keys/sunlab"
 	cl_first_connect
 	create_env
 }
@@ -55,7 +55,7 @@ function cl_install_deps() {
 function create_env() {
 	# entire sunlab
 	MACHINES=("ariel" "caliban" "callisto" "ceres" "chiron" "cupid" "eris" "europa" "hydra" "iapetus" "io" "mars" "mercury" "neptune" "nereid" "nix" "orcus" "phobos" "puck" "saturn" "triton" "varda" "vesta" "xena")
-	outfile="/home/abc324/sunlab.env"
+	outfile="$HOME/sunlab.env"
 	rm -rf $outfile; touch $outfile
 	global_id=0
 	for m in ${MACHINES[*]}; do
@@ -214,11 +214,12 @@ elif [[ "$cmd" == "build-run" && "$count" -eq 3 ]]; then
 		usage
 		exit 1
 	fi
-	if [[ "$2" == "debug" ]]; then
-		make DEBUG=1
-	else 
-		make
-	fi
+	sudo docker run -e MODE="$2" --privileged --rm -v $(pwd):/root --name mu -it rht:latest
+	# if [[ "$2" == "debug" ]]; then
+	# 	make DEBUG=1
+	# else 
+	# 	make
+	# fi
 	cl_run "$3"
 elif [[ "$cmd" == "connect" && "$count" -eq 1 ]]; then
 	cl_connect
