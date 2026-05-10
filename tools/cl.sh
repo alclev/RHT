@@ -99,7 +99,7 @@ function cl_run() {
 		host="${MACHINES[$i]}"
 		global_id=$(grep "$host" ~/sunlab.env | awk '{print $1}')
 		ARGS="${i} ${global_id} ${NODE_LST} ${NUM_MACHINES} -p ${TCP_PORT} -t ${NUM_THREADS} -k ${KEY_RANGE} -r ${REP_DEGREE}"
-		# gdb -ex \"r\" --args
+		# gdb -ex \"r\" --args 
 		CMD="./${EXE_NAME} ${ARGS}"
 		echo "$CMD"
 		cat >>"$tmp_screen" <<EOF

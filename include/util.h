@@ -10,6 +10,7 @@ static constexpr uint64_t kNull = UINT64_MAX;
 
 #define MAX_MULTI 3
 #define kNullKey 0
+#define kNullVal 0
 
 struct config_t {
   uint64_t node_id;
@@ -50,51 +51,11 @@ enum class op_type : uint8_t {
   MULTI_PUT = 2,
   GET_RESULT = 3,
   PUT_RESULT = 4,
-  MULTI_RESUlT = 5,
-  FORWARD = 6,
-  SHUTDOWN = 7,
-};
-
-// Utility functions for implementing 2pc
-namespace TwoPC {
-
-enum class msg_type : uint8_t {
-  PREPARE = 0,
-  PREPARE_ACK = 1,
-  COMMIT = 2,
-  COMMIT_ACK = 3,
-  ABORT = 4
-};
-
-} // namespace TwoPC
-
-// Utility functions for implementing consensus
-namespace Consensus {
-
-enum class msg_type : uint8_t {
-  PREPARE = 0,
-  PREPARE_ACK = 1,
-  ACCEPT = 2,
-  ACCEPT_ACK = 3,
-  ABORT = 4
-};
-
-template <typename T> struct msg {
-  msg_type type;
-  // ballot that we are proposing
-  uint64_t ballot;
-  // highest accepted ballot observed
-  uint64_t max_ballot;
-  // value associated with max_ballot
-  T val;
-};
-
-} // namespace Consensus
-
-struct thread_metrics {
-  uint64_t total_ops = 0;
-  double total_time_us = 0;
-  std::vector<double> latencies_us;
+  MULTI_RESULT = 5,
+  NEW_LEADER = 6,
+  FORWARD = 7,
+  SHUTDOWN = 8,
+  ACK = 9
 };
 
 template <typename K, typename V> struct kv_pair {
@@ -134,6 +95,65 @@ template <typename T> struct op_result {
   op_type type;
   T value;
   bool success;
+};
+
+// Utility functions for implementing 2pc
+namespace TwoPC {
+
+enum class msg_type : uint8_t {
+  PREPARE = 0,
+  PREPARE_ACK = 1,
+  COMMIT = 2,
+  COMMIT_ACK = 3,
+  ABORT = 4
+};
+
+} // namespace TwoPC
+
+// Utility functions for implementing consensus
+namespace Consensus {
+
+enum class msg_type : uint8_t {
+  PREPARE = 0,
+  PREPARE_ACK = 1,
+  ACCEPT = 2,
+  ACCEPT_ACK = 3,
+  ABORT = 4
+};
+
+template <typename T> struct msg {
+  msg_type type;
+  // ballot that we are proposing
+  uint64_t ballot;
+  // highest accepted ballot observed
+  uint64_t max_ballot;
+  // value associated with max_ballot
+  op_bundle<T> val;
+};
+
+template <typename T> void send_msg(int fd, const msg<T> &m) {
+  static_assert(std::is_trivially_copyable_v<msg<T>>);
+  ssize_t n = ::send(fd, &m, sizeof(m), 0);
+  if (n != sizeof(m)) {
+    perror("send_msg error");
+    std::abort();
+  }
+}
+
+template <typename T> void recv_msg(int fd, msg<T> &m) {
+  ssize_t n = ::recv(fd, &m, sizeof(m), MSG_WAITALL);
+  if (n != sizeof(m)) {
+    perror("recv_msg error");
+    std::abort();
+  }
+}
+
+} // namespace Consensus
+
+struct thread_metrics {
+  uint64_t total_ops = 0;
+  double total_time_us = 0;
+  std::vector<double> latencies_us;
 };
 
 template <typename T> void send_result(int fd, const op_result<T> &res) {

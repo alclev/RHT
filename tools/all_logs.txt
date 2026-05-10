@@ -1,4 +1,23 @@
 ==> ../logs/log_0.txt <==
+GNU gdb (GDB) Rocky Linux 8.2-20.el8.0.1
+Copyright (C) 2018 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+Type "show copying" and "show warranty" for details.
+This GDB was configured as "x86_64-redhat-linux-gnu".
+Type "show configuration" for configuration details.
+For bug reporting instructions, please see:
+<http://www.gnu.org/software/gdb/bugs/>.
+Find the GDB manual and other documentation resources online at:
+    <http://www.gnu.org/software/gdb/documentation/>.
+
+For help, type "help".
+Type "apropos word" to search for commands related to "word"...
+Reading symbols from ./rht...done.
+Starting program: /home/abc324/rht 0 6 6,12,15,17,19 5 -p 6000 -t 8 -k 100000 -r
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib64/libthread_db.so.1".
 [INFO] Experiment configuration: 
 Node_id: 0
 Global_id: 6
@@ -13,54 +32,53 @@ Verbose: false
 [INFO] Generating workload...
 [INFO] I am node 0 with global id 6
 [INFO] Listening on port 6000
+[New Thread 0x7ffff1021700 (LWP 911431)]
 [INFO] Connecting to mercury.cse.lehigh.edu...
 [INFO] Connecting to nix.cse.lehigh.edu...
 [INFO] Connecting to phobos.cse.lehigh.edu...
 [INFO] Connecting to saturn.cse.lehigh.edu...
-[DEBUG] Waiting for connections... 4/8 (include/tcp.h:83)
+[DEBUG] Waiting for connections... 2/8 (include/tcp.h:83)
 [INFO] All connections established.
-[INFO] Node id: 17
-sd: 12
-sd: 15
-sd: 14
-sd: 18
-Node id: 19
-sd: 16
-sd: 17
-sd: 19
-sd: 20
-Node id: 12
-sd: 4
-sd: 5
-sd: 8
-sd: 9
-Node id: 15
-sd: 10
-sd: 11
-sd: 6
-sd: 13
+[INFO] Primary socket descriptors:
+(node_id, fd) = (1, 6)
+(node_id, fd) = (4, 14)
+(node_id, fd) = (3, 12)
+(node_id, fd) = (2, 4)
+
+Failure-detector socket descriptors:
+(node_id, fd) = (1, 9)
+(node_id, fd) = (4, 15)
+(node_id, fd) = (3, 13)
+(node_id, fd) = (2, 7)
+
 
 [INFO] Successfully established network connections.
-[INFO] Sending to local id 2, fd 10
-[INFO] Sent to local id 2
-[INFO] Sending to local id 1, fd 4
-[INFO] Sent to local id 1
-[INFO] Sending to local id 3, fd 12
-[INFO] Sent to local id 3
-[INFO] Sending to local id 4, fd 16
-[INFO] Sent to local id 4
-[INFO] Waiting for ack from local id 2, fd 10
-[INFO] Received ack from local id 2
-[INFO] Waiting for ack from local id 1, fd 4
-[INFO] Received ack from local id 1
-[INFO] Waiting for ack from local id 3, fd 12
-[INFO] Received ack from local id 3
-[INFO] Waiting for ack from local id 4, fd 16
-[INFO] Received ack from local id 4
-[INFO] Done. Cleaning up...
-[INFO] Done. Exiting...
+recv_msg error: Socket operation on non-socket
 
+Thread 1 "rht" received signal SIGABRT, Aborted.
+0x00007ffff6ef65af in raise () from /lib64/libc.so.6
+Missing separate debuginfos, use: yum debuginfo-install glibc-2.28-251.el8_10.27.x86_64 libgcc-8.5.0-28.el8_10.x86_64 libstdc++-8.5.0-28.el8_10.x86_64
+(gdb) ^C
 ==> ../logs/log_1.txt <==
+GNU gdb (GDB) Rocky Linux 8.2-20.el8.0.1
+Copyright (C) 2018 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+Type "show copying" and "show warranty" for details.
+This GDB was configured as "x86_64-redhat-linux-gnu".
+Type "show configuration" for configuration details.
+For bug reporting instructions, please see:
+<http://www.gnu.org/software/gdb/bugs/>.
+Find the GDB manual and other documentation resources online at:
+    <http://www.gnu.org/software/gdb/documentation/>.
+
+For help, type "help".
+Type "apropos word" to search for commands related to "word"...
+Reading symbols from ./rht...done.
+Starting program: /home/abc324/rht 1 12 6,12,15,17,19 5 -p 6000 -t 8 -k 100000 -r
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib64/libthread_db.so.1".
 [INFO] Experiment configuration: 
 Node_id: 1
 Global_id: 12
@@ -75,41 +93,53 @@ Verbose: false
 [INFO] Generating workload...
 [INFO] I am node 1 with global id 12
 [INFO] Listening on port 6000
+[New Thread 0x7ffff1021700 (LWP 1000255)]
 [INFO] Connecting to eris.cse.lehigh.edu...
 [INFO] Connecting to nix.cse.lehigh.edu...
 [INFO] Connecting to phobos.cse.lehigh.edu...
 [INFO] Connecting to saturn.cse.lehigh.edu...
 [DEBUG] Waiting for connections... 4/8 (include/tcp.h:83)
 [INFO] All connections established.
-[INFO] Node id: 19
-sd: 16
-sd: 17
-sd: 19
-sd: 20
-Node id: 17
-sd: 10
-sd: 15
-sd: 14
-sd: 18
-Node id: 6
-sd: 6
-sd: 7
-sd: 4
-sd: 11
-Node id: 15
-sd: 8
-sd: 9
-sd: 12
-sd: 13
+[INFO] Primary socket descriptors:
+(node_id, fd) = (0, 6)
+(node_id, fd) = (2, 4)
+(node_id, fd) = (4, 16)
+(node_id, fd) = (3, 14)
+
+Failure-detector socket descriptors:
+(node_id, fd) = (0, 7)
+(node_id, fd) = (2, 5)
+(node_id, fd) = (4, 17)
+(node_id, fd) = (3, 15)
+
 
 [INFO] Successfully established network connections.
-[INFO] Waiting for op from node 0, fd 6
-[INFO] Received op, sending ack
-[INFO] Ack sent
-[INFO] Done. Cleaning up...
-[INFO] Done. Exiting...
+recv_msg error: Socket operation on non-socket
 
+Thread 1 "rht" received signal SIGABRT, Aborted.
+0x00007ffff6ef65af in raise () from /lib64/libc.so.6
+Missing separate debuginfos, use: yum debuginfo-install glibc-2.28-251.el8_10.27.x86_64 libgcc-8.5.0-28.el8_10.x86_64 libstdc++-8.5.0-28.el8_10.x86_64
+(gdb) ^C
 ==> ../logs/log_2.txt <==
+GNU gdb (GDB) Rocky Linux 8.2-20.el8.0.1
+Copyright (C) 2018 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+Type "show copying" and "show warranty" for details.
+This GDB was configured as "x86_64-redhat-linux-gnu".
+Type "show configuration" for configuration details.
+For bug reporting instructions, please see:
+<http://www.gnu.org/software/gdb/bugs/>.
+Find the GDB manual and other documentation resources online at:
+    <http://www.gnu.org/software/gdb/documentation/>.
+
+For help, type "help".
+Type "apropos word" to search for commands related to "word"...
+Reading symbols from ./rht...done.
+Starting program: /home/abc324/rht 2 15 6,12,15,17,19 5 -p 6000 -t 8 -k 100000 -r
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib64/libthread_db.so.1".
 [INFO] Experiment configuration: 
 Node_id: 2
 Global_id: 15
@@ -124,41 +154,54 @@ Verbose: false
 [INFO] Generating workload...
 [INFO] I am node 2 with global id 15
 [INFO] Listening on port 6000
+[New Thread 0x7ffff1021700 (LWP 754817)]
 [INFO] Connecting to eris.cse.lehigh.edu...
 [INFO] Connecting to mercury.cse.lehigh.edu...
 [INFO] Connecting to phobos.cse.lehigh.edu...
 [INFO] Connecting to saturn.cse.lehigh.edu...
+[DEBUG] Waiting for connections... 0/8 (include/tcp.h:83)
 [DEBUG] Waiting for connections... 6/8 (include/tcp.h:83)
 [INFO] All connections established.
-[INFO] Node id: 17
-sd: 14
-sd: 15
-sd: 8
-sd: 17
-Node id: 19
-sd: 16
-sd: 19
-sd: 18
-sd: 20
-Node id: 12
-sd: 4
-sd: 5
-sd: 12
-sd: 13
-Node id: 6
-sd: 6
-sd: 7
-sd: 10
-sd: 11
+[INFO] Primary socket descriptors:
+(node_id, fd) = (1, 8)
+(node_id, fd) = (4, 12)
+(node_id, fd) = (3, 10)
+(node_id, fd) = (0, 6)
+
+Failure-detector socket descriptors:
+(node_id, fd) = (1, 9)
+(node_id, fd) = (4, 13)
+(node_id, fd) = (3, 11)
+(node_id, fd) = (0, 7)
+
 
 [INFO] Successfully established network connections.
-[INFO] Waiting for op from node 0, fd 6
-[INFO] Received op, sending ack
-[INFO] Ack sent
-[INFO] Done. Cleaning up...
-[INFO] Done. Exiting...
+recv_msg error: Socket operation on non-socket
 
+Thread 1 "rht" received signal SIGABRT, Aborted.
+0x00007ffff6ef65af in raise () from /lib64/libc.so.6
+Missing separate debuginfos, use: yum debuginfo-install glibc-2.28-251.el8_10.27.x86_64 libgcc-8.5.0-28.el8_10.x86_64 libstdc++-8.5.0-28.el8_10.x86_64
+(gdb) ^C
 ==> ../logs/log_3.txt <==
+GNU gdb (GDB) Rocky Linux 8.2-20.el8.0.1
+Copyright (C) 2018 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+Type "show copying" and "show warranty" for details.
+This GDB was configured as "x86_64-redhat-linux-gnu".
+Type "show configuration" for configuration details.
+For bug reporting instructions, please see:
+<http://www.gnu.org/software/gdb/bugs/>.
+Find the GDB manual and other documentation resources online at:
+    <http://www.gnu.org/software/gdb/documentation/>.
+
+For help, type "help".
+Type "apropos word" to search for commands related to "word"...
+Reading symbols from ./rht...done.
+Starting program: /home/abc324/rht 3 17 6,12,15,17,19 5 -p 6000 -t 8 -k 100000 -r
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib64/libthread_db.so.1".
 [INFO] Experiment configuration: 
 Node_id: 3
 Global_id: 17
@@ -173,41 +216,53 @@ Verbose: false
 [INFO] Generating workload...
 [INFO] I am node 3 with global id 17
 [INFO] Listening on port 6000
+[New Thread 0x7ffff1021700 (LWP 840752)]
 [INFO] Connecting to eris.cse.lehigh.edu...
 [INFO] Connecting to mercury.cse.lehigh.edu...
 [INFO] Connecting to nix.cse.lehigh.edu...
 [INFO] Connecting to saturn.cse.lehigh.edu...
 [DEBUG] Waiting for connections... 6/8 (include/tcp.h:83)
 [INFO] All connections established.
-[INFO] Node id: 6
-sd: 8
-sd: 9
-sd: 12
-sd: 13
-Node id: 15
-sd: 4
-sd: 5
-sd: 16
-sd: 17
-Node id: 19
-sd: 18
-sd: 19
-sd: 11
-sd: 20
-Node id: 12
-sd: 6
-sd: 7
-sd: 14
-sd: 15
+[INFO] Primary socket descriptors:
+(node_id, fd) = (0, 6)
+(node_id, fd) = (2, 4)
+(node_id, fd) = (4, 18)
+(node_id, fd) = (1, 8)
+
+Failure-detector socket descriptors:
+(node_id, fd) = (0, 7)
+(node_id, fd) = (2, 5)
+(node_id, fd) = (4, 19)
+(node_id, fd) = (1, 10)
+
 
 [INFO] Successfully established network connections.
-[INFO] Waiting for op from node 0, fd 8
-[INFO] Received op, sending ack
-[INFO] Ack sent
-[INFO] Done. Cleaning up...
-[INFO] Done. Exiting...
+recv_msg error: Socket operation on non-socket
 
+Thread 1 "rht" received signal SIGABRT, Aborted.
+0x00007ffff6ef65af in raise () from /lib64/libc.so.6
+Missing separate debuginfos, use: yum debuginfo-install glibc-2.28-251.el8_10.27.x86_64 libgcc-8.5.0-28.el8_10.x86_64 libstdc++-8.5.0-28.el8_10.x86_64
+(gdb) ^C
 ==> ../logs/log_4.txt <==
+GNU gdb (GDB) Rocky Linux 8.2-20.el8.0.1
+Copyright (C) 2018 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+Type "show copying" and "show warranty" for details.
+This GDB was configured as "x86_64-redhat-linux-gnu".
+Type "show configuration" for configuration details.
+For bug reporting instructions, please see:
+<http://www.gnu.org/software/gdb/bugs/>.
+Find the GDB manual and other documentation resources online at:
+    <http://www.gnu.org/software/gdb/documentation/>.
+
+For help, type "help".
+Type "apropos word" to search for commands related to "word"...
+Reading symbols from ./rht...done.
+Starting program: /home/abc324/rht 4 19 6,12,15,17,19 5 -p 6000 -t 8 -k 100000 -r
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib64/libthread_db.so.1".
 [INFO] Experiment configuration: 
 Node_id: 4
 Global_id: 19
@@ -222,35 +277,40 @@ Verbose: false
 [INFO] Generating workload...
 [INFO] I am node 4 with global id 19
 [INFO] Listening on port 6000
+[New Thread 0x7ffff1021700 (LWP 714301)]
 [INFO] Connecting to eris.cse.lehigh.edu...
 [INFO] Connecting to mercury.cse.lehigh.edu...
 [INFO] Connecting to nix.cse.lehigh.edu...
 [INFO] Connecting to phobos.cse.lehigh.edu...
 [INFO] All connections established.
-[INFO] Node id: 15
-sd: 10
-sd: 12
-sd: 18
-sd: 19
-Node id: 17
-sd: 8
-sd: 9
-sd: 20
-sd: 21
-Node id: 12
-sd: 4
-sd: 5
-sd: 16
-sd: 17
-Node id: 6
-sd: 6
-sd: 7
-sd: 14
-sd: 15
+[INFO] Primary socket descriptors:
+(node_id, fd) = (0, 6)
+(node_id, fd) = (2, 4)
+(node_id, fd) = (3, 10)
+(node_id, fd) = (1, 8)
+
+Failure-detector socket descriptors:
+(node_id, fd) = (0, 7)
+(node_id, fd) = (2, 5)
+(node_id, fd) = (3, 11)
+(node_id, fd) = (1, 9)
+
 
 [INFO] Successfully established network connections.
-[INFO] Waiting for op from node 0, fd 6
-[INFO] Received op, sending ack
-[INFO] Ack sent
-[INFO] Done. Cleaning up...
-[INFO] Done. Exiting...
+recv_msg error: Socket operation on non-socket
+
+Thread 1 "rht" received signal SIGABRT, Aborted.
+0x00007ffff6ef65af in raise () from /lib64/libc.so.6
+Missing separate debuginfos, use: yum debuginfo-install glibc-2.28-251.el8_10.27.x86_64 libgcc-8.5.0-28.el8_10.x86_64 libstdc++-8.5.0-28.el8_10.x86_64
+(gdb) bt
+#0  0x00007ffff6ef65af in raise () from /lib64/libc.so.6
+#1  0x00007ffff6ec9ee5 in abort () from /lib64/libc.so.6
+#2  0x0000000000423697 in Consensus::recv_msg<int> (fd=0, m=...)
+    at include/util.h:108
+#3  0x000000000041b5de in Paxos<int>::PrepareAck (this=0x380e5c0, leader_fd=0)
+    at include/consensus.h:47
+#4  0x0000000000413e84 in Worker::run (this=0x7fffffffc1c0)
+    at include/worker.h:120
+#5  0x00000000004089e0 in main (argc=12, argv=0x7fffffffeb58)
+    at src/main.cc:127
+(gdb) ^C

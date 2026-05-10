@@ -99,7 +99,7 @@ int main(int argc, char** argv) {
         kv_0, {kNullKey, 0}, {kNullKey, 0}};
     if (r < 20) {
       // Put on single key -- 20%
-      workload.push_back(op_bundle<int>{op_type::PUT, kv_list});
+      workload.push_back(op_bundle<int>{op_type::PUT, kv_list, i});
     } else if (r >= 20 && r < 40) {
       // Put on multiple keys -- 20%
       // Make two more kv's
@@ -107,12 +107,12 @@ int main(int argc, char** argv) {
       auto kv_2 = kv_pair<int, int>{key_dist(rng), val_dist(rng)};
       std::array<kv_pair<int, int>, MAX_MULTI> kv_multilist = {kv_0, kv_1,
                                                                kv_2};
-      workload.push_back(op_bundle<int>{op_type::MULTI_PUT, kv_multilist});
+      workload.push_back(op_bundle<int>{op_type::MULTI_PUT, kv_multilist, i});
     } else {
       // Get -- 60%
       // for get we only need the key so the value will essentially be ignored
       // for brevity
-      workload.push_back(op_bundle<int>{op_type::GET, kv_list});
+      workload.push_back(op_bundle<int>{op_type::GET, kv_list, i});
     }
   }
 #ifdef WORKLOAD_DUMP
