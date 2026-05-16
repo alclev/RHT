@@ -58,7 +58,7 @@ public:
                       &result) != 0)
         LOGGING_FATAL("Failed to resolve hostname: {}", host);
 
-      for (int i = 0; i < cfg_.conns_per_node; ++i) {
+      for (int i = 0; i < (int)cfg_.conns_per_node; ++i) {
         int fd = socket(AF_INET, SOCK_STREAM, 0);
         if (fd < 0)
           LOGGING_FATAL("Failed to create socket: {}", strerror(errno));
@@ -71,6 +71,11 @@ public:
 
         // send our global id so receiver can map this fd to us
         send_init(fd, init_msg{cfg_.global_id, (uint64_t)i});
+
+        // limit send buffer for fast failure detection
+        int sndbuf = 4096;
+        setsockopt(fd, SOL_SOCKET, SO_SNDBUF, &sndbuf, sizeof(sndbuf));
+
         peer_fds_[id].push_back(fd);
       }
 
@@ -120,7 +125,8 @@ private:
       while (true) {
         sockaddr_in client_addr{};
         socklen_t len = sizeof(client_addr);
-        int fd = accept(server_fd, reinterpret_cast<sockaddr *>(&client_addr), &len);
+        int fd =
+            accept(server_fd, reinterpret_cast<sockaddr *>(&client_addr), &len);
         if (fd < 0)
           continue;
 

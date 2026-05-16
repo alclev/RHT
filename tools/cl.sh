@@ -51,6 +51,21 @@ function cl_install_deps() {
 	create_env
 }
 
+function wait_for_pattern() {
+	local pattern="$1"
+	local file="$2"
+
+	# Wait until the file exists
+	while [[ ! -f "$file" ]]; do
+		sleep 0.1
+	done
+
+	# Poll the file until pattern appears
+	while ! grep -qF "$pattern" "$file" 2>/dev/null; do
+		sleep 0.1
+	done
+}
+
 # Function to send hostnames of all **other** nodes to each node
 function create_env() {
 	# entire sunlab
@@ -99,7 +114,7 @@ function cl_run() {
 		host="${MACHINES[$i]}"
 		global_id=$(grep "$host" ~/sunlab.env | awk '{print $1}')
 		ARGS="${i} ${global_id} ${NODE_LST} ${NUM_MACHINES} -p ${TCP_PORT} -t ${NUM_THREADS} -k ${KEY_RANGE} -r ${REP_DEGREE}"
-		# gdb -ex \"r\" --args 
+		# gdb -ex \"r\" --args
 		CMD="./${EXE_NAME} ${ARGS}"
 		echo "$CMD"
 		cat >>"$tmp_screen" <<EOF
@@ -113,47 +128,52 @@ EOF
 	rm "$tmp_screen"
 }
 
+# SEND and RUN a binary on the remote MACHINES
 # $1 : Relative path of exe
-function cl_debug() {
+function cl_custom_run() {
+	# check if file exists
 	EXE_NAME=$(basename "$1")
 	if [[ ! -f "build/$1" ]]; then
 		echo "Executable not found: $1"
 		exit 1
 	fi
-	# Send the executable to all MACHINES
 	for m in ${MACHINES[*]}; do
 		scp "build/$1" "${USER}@${m}.${DOMAIN}:${EXE_NAME}" &
 	done
 	wait
-	rm -rf gdb-logs
-	mkdir gdb-logs
-
+	rm -rf logs
+	mkdir logs
 	# Set up a screen script for running the program on all MACHINES
 	tmp_screen="$(mktemp)" || exit 1
-	make_screen $tmp_screen
-
-	gdb_cmd="$2"
-	echo "Running gdb with command: $gdb_cmd"
+	make_screen "$tmp_screen"
+	NUM_MACHINES=${#MACHINES[@]}
+	# Populate node list
+	NODE_LST=""
+	for i in "${!MACHINES[@]}"; do
+		host="${MACHINES[$i]}"
+		global_id=$(grep "$host" ~/sunlab.env | awk '{print $1}')
+		if [[ -n "$NODE_LST" ]]; then
+			NODE_LST+=","
+		fi
+		NODE_LST+="$global_id"
+	done
 
 	for i in "${!MACHINES[@]}"; do
 		host="${MACHINES[$i]}"
-		CMD="--hostname ${host} --node-id ${i} --leader-fixed ${ARGS}"
-		if [[ $i -eq 0 && -n "$gdb_cmd" ]]; then
-			cat >>"$tmp_screen" <<EOF
-screen -t node${i} ssh ${USER}@${host}.${DOMAIN} gdb -ex \"${gdb_cmd}\" -ex \"r\" --args ./${EXE_NAME} ${CMD}; bash
-logfile gdb-logs/gdb_${i}.log
+		global_id=$(grep "$host" ~/sunlab.env | awk '{print $1}')
+		ARGS="${i} ${global_id} ${NODE_LST} ${NUM_MACHINES} -p ${TCP_PORT} -t ${NUM_THREADS} -k ${KEY_RANGE} -r ${REP_DEGREE}"
+		# gdb -ex \"r\" --args
+		CMD="${CUSTOM_ARGS} ./${EXE_NAME} ${ARGS}"
+		echo "$CMD"
+		cat >>"$tmp_screen" <<EOF
+screen -t node${i} ssh ${USER}@${host}.${DOMAIN} ${CMD}
+logfile logs/log_${i}.txt
 log on
 EOF
-		else
-			cat >>"$tmp_screen" <<EOF
-screen -t node${i} ssh ${USER}@${host}.${DOMAIN} gdb -ex \"r\" --args ./${EXE_NAME} ${CMD}; bash
-logfile gdb-logs/gdb_${i}.log
-log on
-EOF
-		fi
 	done
-	screen -c $tmp_screen
-	rm $tmp_screen
+
+	screen -c "$tmp_screen"
+	rm "$tmp_screen"
 }
 
 # Connect to remote nodes (e.g., for debugging)
@@ -220,6 +240,7 @@ elif [[ "$cmd" == "build-run" && "$count" -eq 3 ]]; then
 	# else
 	# 	make
 	# fi
+	REP_DEGREE=2
 	cl_run "$3"
 elif [[ "$cmd" == "run" && "$count" -eq 2 ]]; then
 	cl_run "$2"
@@ -231,77 +252,129 @@ elif [[ "$cmd" == "reset-all" && "$count" -eq 1 ]]; then
 	reset-all
 elif [[ "$cmd" == "do-all" && "$count" -eq 2 ]]; then
 	do_all "$2"
+elif [[ "$cmd" == "run-custom" && "$count" -eq 2 ]]; then
+	CUSTOM_ARGS="gdb -ex \"catch throw\" -ex \"r\" --args"
+	cl_custom_run "$2"
 elif [[ "$cmd" == "find-machines" && "$count" -eq 1 ]]; then
 	# entire sunlab
 	MACHINES=("ariel" "caliban" "callisto" "ceres" "chiron" "cupid" "eris" "europa" "hydra" "iapetus" "io" "mars" "mercury" "neptune" "nereid" "nix" "orcus" "phobos" "puck" "saturn" "triton" "varda" "vesta" "xena")
 	do_all "echo -e \"\$(hostname)\n\"; ss -tuln | grep ${TCP_PORT}"
 elif [[ "$cmd" == "run-experiment" && "$count" -eq 2 ]]; then
 	mkdir -p results
-	echo "Throughput,AvgLatency,NumThreads,RepDegree,KeyRange,SystemSize" >results/exp_1.csv
-	REP_DEGREE=1
-	# Experiment 1: Vary the key range
-	echo "Starting experiment #1..."
-	for rep in {1,2,3}; do
-		REP_DEGREE=$rep
-		for range in {10000,100000,1000000,10000000}; do
-			KEY_RANGE=$range
-			echo "Launching experiment with ${KEY_RANGE} key range..."
-			cl_run "$2"
-			# generate tmp filename with rand 4 chars
-			tmp_file=$(mktemp)
-			scp ${USER}@${MACHINES[0]}.${DOMAIN}:metrics.csv $tmp_file
-			# append the second line of tmp file to exp_1.csv
-			tail -n 1 $tmp_file >>results/exp_1.csv
-			do_all "lsof -ti :${TCP_PORT} | xargs kill -9"
-			rm $tmp_file
-		done
-	done
-	echo "Throughput,AvgLatency,NumThreads,RepDegree,KeyRange,SystemSize" >results/exp_2.csv
-	# Experiment 2: Vary the number of nodes
-	KEY_RANGE=1000000
-	NUM_THREADS=8
-	REP_DEGREE=1
-	echo "Starting experiment #2..."
-	ORIG_MACHINES=("${MACHINES[@]}")
-	for i in $(seq 2 ${#ORIG_MACHINES[@]}); do
-		MACHINES=("${ORIG_MACHINES[@]:0:$i}")
-		echo "Launching experiment with ${#MACHINES[@]} nodes..."
-		cl_run "$2"
-		tmp_file=$(mktemp)
-		scp ${USER}@${MACHINES[0]}.${DOMAIN}:metrics.csv $tmp_file
-		tail -n 1 $tmp_file >>results/exp_2.csv
-		do_all "lsof -ti :${TCP_PORT} | xargs kill -9"
-		rm $tmp_file
-	done
-	echo "Throughput,AvgLatency,NumThreads,RepDegree,KeyRange,SystemSize" >results/exp_3.csv
-	# Experiment 3: Vary the number of threads
+
+	# Experiment 1: Vary the key range and rep degree
+	# echo "Starting experiment #1..."
+	# echo "system_size,replication_degree,key_range,lat_us_avg,lat_us_p50,lat_us_p90,lat_us_p99,election_lat,thru_avg_ops_s" >results/exp_1.csv
+
+	# for rep in {1,2,3,4,5}; do
+	# 	echo "Resetting..."
+	# 	do_all "kill -9 -1"
+
+	# 	REP_DEGREE=$rep
+	# 	for range in {1000,2000,4000,8000,16000,32000,64000,128000}; do
+	# 		KEY_RANGE=$range
+	# 		echo "Launching experiment with ${KEY_RANGE} key range..."
+	# 		cl_run "$2"
+	# 		grep -oP '\[PARSE\] \K.*' logs/log_0.txt >>results/exp_1.csv
+
+	# 	done
+	# done
+
+	# Experiment 2: Vary the number of nodes in the system
+	# echo "system_size,replication_degree,key_range,lat_us_avg,lat_us_p50,lat_us_p90,lat_us_p99,election_lat,thru_avg_ops_s" >results/exp_2.csv
+	# KEY_RANGE=1000000
+	# NUM_THREADS=8
+	# REP_DEGREE=1
+	# echo "Starting experiment #2..."
+	# ORIG_MACHINES=("${MACHINES[@]}")
+	# for i in $(seq 3 ${#ORIG_MACHINES[@]}); do
+	# 	MACHINES=("${ORIG_MACHINES[@]:0:$i}")
+	# 	echo "Launching experiment with ${#MACHINES[@]} nodes..."
+	# 	cl_run "$2"
+	# 	grep -oP '\[PARSE\] \K.*' logs/log_0.txt >>results/exp_2.csv
+	# done
+
+	# echo "Throughput,AvgLatency,NumThreads,RepDegree,KeyRange,SystemSize" >results/exp_3.csv
+	# Experiment 3: Failover experiment
+	echo "lat_us" >results/failover.csv
 	KEY_RANGE=1000000
 	NUM_THREADS=8
 	REP_DEGREE=1
 	echo "Starting experiment #3..."
-	for n in $(seq 1 12); do
-		NUM_THREADS=$n
-		echo "Launching experiment with ${NUM_THREADS} threads..."
-		cl_run "$2"
-		tmp_file=$(mktemp)
-		scp ${USER}@${MACHINES[0]}.${DOMAIN}:metrics.csv $tmp_file
-		tail -n 1 $tmp_file >>results/exp_3.csv
-		do_all "lsof -ti :${TCP_PORT} | xargs kill -9"
-		rm $tmp_file
-	done
-	echo "Throughput,AvgLatency,NumThreads,RepDegree,KeyRange,SystemSize" >results/exp_4.csv
-	# Experiment 4: Vary the replication degree
-	echo "Starting experiment #4..."
-	NUM_THREADS=8
-	for n in $(seq 1 5); do
-		REP_DEGREE=$n
-		echo "Launching experiment with replication degree ${REP_DEGREE}..."
-		cl_run "$2"
-		tmp_file=$(mktemp)
-		scp ${USER}@${MACHINES[0]}.${DOMAIN}:metrics.csv $tmp_file
-		tail -n 1 $tmp_file >>results/exp_4.csv
-		do_all "lsof -ti :${TCP_PORT} | xargs kill -9"
-		rm $tmp_file
+
+	ITERATION=0
+	NUM_ITERATIONS=500
+
+	while [[ $ITERATION -lt $NUM_ITERATIONS ]]; do
+		echo "Starting iteration ${ITERATION}..."
+		ITERATION=$((ITERATION + 1))
+
+		# check if file exists
+		EXE_NAME=$(basename "$2")
+		if [[ ! -f "build/$2" ]]; then
+			echo "Executable not found: $2"
+			exit 1
+		fi
+		# for m in ${MACHINES[*]}; do
+		# 	scp "build/$2" "${USER}@${m}.${DOMAIN}:${EXE_NAME}" &
+		# done
+		# wait
+		rm -rf logs
+		mkdir logs
+
+		(
+			wait_for_pattern "[LEADER ELECTION] System stable." logs/log_0.txt
+			echo "Pattern found. Killing leader..."
+			# sleep 5
+			# kill the leader
+			ssh ${USER}@${MACHINES[0]}.${DOMAIN} "pkill -9 -f '${EXE_NAME}.*'"
+
+			wait_for_pattern "[FAILOVER]" logs/log_1.txt
+			echo "Pattern found. Extracting failover time..."
+
+			RESULT=$(grep -oP '\[FAILOVER\] \K[\d.]+' logs/log_1.txt || true)
+			if [[ -n "$RESULT" && "$RESULT" != "0" ]]; then
+				echo "$RESULT" >>results/failover.csv
+				echo "Failover time: $RESULT us"
+			else
+				echo "Warning: No failover time found"
+			fi
+
+			reset-all
+		) &
+
+		# Set up a screen script for running the program on all MACHINES
+		tmp_screen="$(mktemp)" || exit 1
+		make_screen "$tmp_screen"
+		NUM_MACHINES=${#MACHINES[@]}
+		# Populate node list
+		NODE_LST=""
+		for i in "${!MACHINES[@]}"; do
+			host="${MACHINES[$i]}"
+			global_id=$(grep "$host" ~/sunlab.env | awk '{print $1}')
+			if [[ -n "$NODE_LST" ]]; then
+				NODE_LST+=","
+			fi
+			NODE_LST+="$global_id"
+		done
+
+		for i in "${!MACHINES[@]}"; do
+			host="${MACHINES[$i]}"
+			global_id=$(grep "$host" ~/sunlab.env | awk '{print $1}')
+			ARGS="${i} ${global_id} ${NODE_LST} ${NUM_MACHINES} -p ${TCP_PORT} -t ${NUM_THREADS} -k ${KEY_RANGE} -r ${REP_DEGREE}"
+			# gdb -ex \"r\" --args
+			CMD="./${EXE_NAME} ${ARGS}"
+			echo "$CMD"
+			cat >>"$tmp_screen" <<EOF
+screen -t node${i} ssh -t ${USER}@${host}.${DOMAIN} ${CMD}
+logfile logs/log_${i}.txt
+log on
+EOF
+		done
+
+		screen -c "$tmp_screen"
+		rm "$tmp_screen"
+
 	done
 
 else

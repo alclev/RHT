@@ -7,6 +7,7 @@
 #include <string>
 
 static constexpr uint64_t kNull = UINT64_MAX;
+static constexpr uint64_t kTimeout_ms = 500;
 
 #define MAX_MULTI 3
 #define kNullKey 0
@@ -18,6 +19,7 @@ struct config_t {
   std::vector<int> nodes;
   uint64_t system_size;
   uint64_t conns_per_node;
+  uint64_t testtime_s;
   uint16_t port;
   uint64_t num_ops;
   uint64_t key_range;
@@ -53,9 +55,10 @@ enum class op_type : uint8_t {
   PUT_RESULT = 4,
   MULTI_RESULT = 5,
   NEW_LEADER = 6,
-  FORWARD = 7,
-  SHUTDOWN = 8,
-  ACK = 9
+  HEARTBEAT = 7,
+  BARRIER = 8,
+  SHUTDOWN = 9,
+  ACK = 10
 };
 
 template <typename K, typename V> struct kv_pair {
@@ -108,6 +111,45 @@ enum class msg_type : uint8_t {
   ABORT = 4
 };
 
+template <typename T> struct msg {
+  msg_type type;
+  uint64_t txn_id;
+  op_bundle<T> op;
+};
+
+template <typename T> bool send_msg(int fd, const TwoPC::msg<T> &m) {
+  static_assert(std::is_trivially_copyable_v<TwoPC::msg<T>>);
+  struct timeval tv;
+  tv.tv_sec = kTimeout_ms / 1000;
+  tv.tv_usec = (kTimeout_ms % 1000) * 1000;
+  setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv));
+
+  ssize_t n = ::send(fd, &m, sizeof(m), 0);
+  if (n != sizeof(m)) {
+    if (errno == EAGAIN || errno == EWOULDBLOCK)
+      return false;
+    perror("TwoPC::send_msg error");
+    __builtin_trap();
+  }
+  return true;
+}
+
+template <typename T> bool recv_msg(int fd, TwoPC::msg<T> &m) {
+  struct timeval tv;
+  tv.tv_sec = kTimeout_ms / 1000;
+  tv.tv_usec = (kTimeout_ms % 1000) * 1000;
+  setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+
+  ssize_t n = ::recv(fd, &m, sizeof(m), MSG_WAITALL);
+  if (n != sizeof(m)) {
+    if (errno == EAGAIN || errno == EWOULDBLOCK)
+      return false;
+    perror("TwoPC::recv_msg error");
+    __builtin_trap();
+  }
+  return true;
+}
+
 } // namespace TwoPC
 
 // Utility functions for implementing consensus
@@ -131,21 +173,34 @@ template <typename T> struct msg {
   op_bundle<T> val;
 };
 
-template <typename T> void send_msg(int fd, const msg<T> &m) {
-  static_assert(std::is_trivially_copyable_v<msg<T>>);
+template <typename T> bool send_msg(int fd, const Consensus::msg<T> &m) {
+  static_assert(std::is_trivially_copyable_v<Consensus::msg<T>>);
+  struct timeval tv;
+  tv.tv_sec = kTimeout_ms / 1000;
+  tv.tv_usec = (kTimeout_ms % 1000) * 1000;
+  setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv));
+
   ssize_t n = ::send(fd, &m, sizeof(m), 0);
   if (n != sizeof(m)) {
+    if (errno == EAGAIN || errno == EWOULDBLOCK)
+      return false;
     perror("send_msg error");
-    std::abort();
+    __builtin_trap();
   }
+  return true;
 }
 
-template <typename T> void recv_msg(int fd, msg<T> &m) {
+template <typename T> bool recv_msg(int fd, Consensus::msg<T> &m) {
+  struct timeval tv;
+  tv.tv_sec = kTimeout_ms / 1000;
+  tv.tv_usec = (kTimeout_ms % 1000) * 1000;
+  setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+
   ssize_t n = ::recv(fd, &m, sizeof(m), MSG_WAITALL);
-  if (n != sizeof(m)) {
-    perror("recv_msg error");
-    std::abort();
+  if (n <= 0 || n != sizeof(m)) {
+    return false;
   }
+  return true;
 }
 
 } // namespace Consensus
@@ -156,52 +211,103 @@ struct thread_metrics {
   std::vector<double> latencies_us;
 };
 
-template <typename T> void send_result(int fd, const op_result<T> &res) {
-  static_assert(std::is_trivially_copyable_v<op_result<T>>);
-  ssize_t n = ::send(fd, &res, sizeof(res), 0);
-  if (n != sizeof(res)) {
-    perror("send_result: send error");
-    std::abort();
-  }
-}
-
-template <typename T> void recv_result(int fd, op_result<T> &res) {
-  ssize_t n = ::recv(fd, &res, sizeof(res), MSG_WAITALL);
-  if (n != sizeof(res)) {
-    perror("recv_result: recv error");
-    std::abort();
-  }
-}
-
-template <typename T> void send_op(int fd, const op_bundle<T> &op) {
+template <typename T> bool send_op(int fd, const op_bundle<T> &op) {
   static_assert(std::is_trivially_copyable_v<op_bundle<T>>);
+  struct timeval tv;
+  tv.tv_sec = kTimeout_ms / 1000;
+  tv.tv_usec = (kTimeout_ms % 1000) * 1000;
+  setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv));
+
   ssize_t n = ::send(fd, &op, sizeof(op), 0);
-  if (n != sizeof(op)) {
-    perror("send error");
-    std::abort();
+  if (n <= 0 || n != sizeof(op)) {
+    return false;
   }
+  return true;
 }
 
-template <typename T> void recv_op(int fd, op_bundle<T> &op) {
+template <typename T> bool recv_op(int fd, op_bundle<T> &op) {
+  struct timeval tv;
+  tv.tv_sec = kTimeout_ms / 1000;
+  tv.tv_usec = (kTimeout_ms % 1000) * 1000;
+  setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+
   ssize_t n = ::recv(fd, &op, sizeof(op), MSG_WAITALL);
-  if (n != sizeof(op)) {
-    perror("recv error");
-    std::abort();
+  if (n <= 0 || n != sizeof(op)) {
+    return false;
   }
+  return true;
 }
 
-inline void send_init(int fd, const init_msg &msg) {
+inline bool send_init(int fd, const init_msg &msg) {
+  struct timeval tv;
+  tv.tv_sec = kTimeout_ms / 1000;
+  tv.tv_usec = (kTimeout_ms % 1000) * 1000;
+  setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv));
+
   ssize_t n = ::send(fd, &msg, sizeof(msg), 0);
   if (n != sizeof(msg)) {
+    if (errno == EAGAIN || errno == EWOULDBLOCK)
+      return false;
     perror("send_init error");
-    std::abort();
+    __builtin_trap();
   }
+  return true;
 }
 
-inline void recv_init(int fd, init_msg &msg) {
+inline bool recv_init(int fd, init_msg &msg) {
+  struct timeval tv;
+  tv.tv_sec = kTimeout_ms / 1000;
+  tv.tv_usec = (kTimeout_ms % 1000) * 1000;
+  setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+
   ssize_t n = ::recv(fd, &msg, sizeof(msg), MSG_WAITALL);
   if (n != sizeof(msg)) {
+    if (errno == EAGAIN || errno == EWOULDBLOCK)
+      return false;
     perror("recv_init error");
-    std::abort();
+    __builtin_trap();
   }
+  return true;
 }
+
+inline void PinToCore(size_t core_id) {
+  cpu_set_t cpuset;
+  CPU_ZERO(&cpuset);
+  CPU_SET(core_id, &cpuset);
+  pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
+}
+
+#define CALC_LATENCY                                                           \
+  [&](std::tuple<double, double, double, double> *result,                      \
+      std::vector<double> &latencies) {                                        \
+    double latency_avg = 0.0;                                                  \
+    double latency_stddev = 0.0;                                               \
+    double latency_50p = 0.0;                                                  \
+    double latency_99p = 0.0;                                                  \
+    double latency_99_9p = 0.0;                                                \
+    [[maybe_unused]] double latency_max = 0.0;                                 \
+    int latency_max_idx = 0;                                                   \
+    if (latencies.size() > 0) {                                                \
+      latency_avg = std::accumulate(latencies.begin(), latencies.end(), 0.0);  \
+      latency_avg /= static_cast<double>(latencies.size());                    \
+      latency_stddev = std::accumulate(latencies.begin(), latencies.end(), 0,  \
+                                       [latency_avg](double a, double b) {     \
+                                         return a + std::abs(latency_avg - b); \
+                                       });                                     \
+      latency_stddev /= static_cast<double>(latencies.size());                 \
+      latency_stddev = std::sqrt(latency_stddev);                              \
+      latency_max_idx =                                                        \
+          std::distance(latencies.begin(),                                     \
+                        std::max_element(latencies.begin(), latencies.end())); \
+      latency_max = latencies[latency_max_idx];                                \
+      std::sort(latencies.begin(), latencies.end());                           \
+      latency_50p =                                                            \
+          latencies[static_cast<uint32_t>((latencies.size() * .50))];          \
+      latency_99p =                                                            \
+          latencies[static_cast<uint32_t>((latencies.size() * .99))];          \
+      latency_99_9p =                                                          \
+          latencies[static_cast<uint32_t>((latencies.size() * .999))];         \
+      *result = std::make_tuple(latency_avg, latency_50p, latency_99p,         \
+                                latency_99_9p);                                \
+    }                                                                          \
+  };

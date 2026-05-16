@@ -6,9 +6,10 @@
 
 template <typename T> class Paxos {
 public:
-  explicit Paxos(const config_t &cfg, const std::unordered_map<int, int> &conns)
-      : cfg_(cfg), system_size_(cfg.system_size), conns_(conns),
-        quorum_(quorum()) {}
+  explicit Paxos(const config_t &cfg, const std::unordered_map<int, int> &conns,
+                 std::vector<std::atomic<bool>> &failure_detected)
+      : cfg_(cfg), system_size_(cfg.system_size), quorum_(quorum()),
+        conns_(conns), failure_detected_(failure_detected) {}
 
   bool Prepare() {
     while (true) {
@@ -20,6 +21,8 @@ public:
       m.max_ballot = 0;
 
       for (auto &[id, conn] : conns_) {
+        if (failure_detected_[id].load(std::memory_order_acquire))
+          continue;
         Consensus::send_msg(conn, m);
       }
 
@@ -28,6 +31,8 @@ public:
       op_bundle<T> highest_val{};
 
       for (auto &[id, conn] : conns_) {
+        if (failure_detected_[id].load(std::memory_order_acquire))
+          continue;
         Consensus::msg<T> ack;
         Consensus::recv_msg(conn, ack);
         if (ack.type == Consensus::msg_type::PREPARE_ACK) {
@@ -45,7 +50,7 @@ public:
         }
       }
 
-      if (acks >= quorum_) {
+      if (acks >= (int)quorum_) {
         if (max_ballot_seen > 0) {
           pending_val_ = highest_val;
         }
@@ -88,26 +93,43 @@ public:
     m.ballot = ballot_;
     m.val = op;
 
-    // broadcast to all peers
+    // LOGGING_INFO("Accept() sending op id {}", op.id);
+
+    // broadcast to all live peers
     for (auto &[id, conn] : conns_) {
+      if (failure_detected_[id].load(std::memory_order_acquire))
+        continue;
       Consensus::send_msg(conn, m);
     }
 
-    // collect acks
+    // collect acks from live peers only
     int acks = 0;
     for (auto &[id, conn] : conns_) {
+      if (failure_detected_[id].load(std::memory_order_acquire))
+        continue;
       Consensus::msg<T> ack;
-      Consensus::recv_msg(conn, ack);
-      if (ack.type == Consensus::msg_type::ACCEPT_ACK) {
-        acks++;
+      bool ok = Consensus::recv_msg(conn, ack);
+      if (!ok) {
+        failure_detected_[id].store(true, std::memory_order_release);
+        continue;
       }
+      if (ack.type == Consensus::msg_type::ACCEPT_ACK)
+        acks++;
     }
-    return acks >= quorum_;
+    return acks >= (int)quorum_;
   }
 
   bool AcceptAck(int leader_fd) {
+
     Consensus::msg<T> m;
-    Consensus::recv_msg(leader_fd, m);
+
+    bool ok = Consensus::recv_msg(leader_fd, m);
+    // LOGGING_INFO("AcceptAck() got op id {}", m.val.id);
+
+    if (!ok || m.type != Consensus::msg_type::ACCEPT) {
+      // stale or corrupt message, reject
+      return false;
+    }
 
     // reject if ballot is stale
     if (m.ballot < promised_ballot_) {
@@ -139,10 +161,11 @@ private:
   uint64_t system_size_;
   uint64_t ballot_round_ = 0;
   uint64_t ballot_ = 0;
-  uint64_t promised_ballot_ = 0;   
-  uint64_t accepted_ballot_ = 0;   
-  op_bundle<T> accepted_val_{};    
-  op_bundle<T> pending_val_{};     
+  uint64_t promised_ballot_ = 0;
+  uint64_t accepted_ballot_ = 0;
+  op_bundle<T> accepted_val_{};
+  op_bundle<T> pending_val_{};
   uint64_t quorum_;
   std::unordered_map<int, int> conns_;
+  std::vector<std::atomic<bool>> &failure_detected_;
 };

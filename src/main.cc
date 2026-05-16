@@ -5,7 +5,7 @@
 #include "util.h"
 #include "worker.h"
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
   argparse::ArgumentParser program("DHT");
   // Injest the arguments
   // Two mandatory id's: 1. id to distinguish roles for each node
@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
   // -n: #ops
   program.add_argument("-n")
       .help("Size of the workload.")
-      .default_value(uint64_t{1'000'000})
+      .default_value(uint64_t{50000})
       .scan<'u', uint64_t>();
   // -k: key range
   program.add_argument("-k")
@@ -55,7 +55,7 @@ int main(int argc, char** argv) {
 
   try {
     program.parse_args(argc, argv);
-  } catch (const std::exception& err) {
+  } catch (const std::exception &err) {
     std::cerr << err.what() << std::endl;
     std::cerr << program;
     return 1;
@@ -69,12 +69,21 @@ int main(int argc, char** argv) {
     nodes.push_back(std::stoi(item));
   }
 
-  const int conns_per_node = 2;
+  // Connection map (one per peer):
+  // 1. primary -- consensus (1)
+  // 2. failure detector sockets (1)
+  // 3. barrier sockets (1)
+  // e.g. for system_size=10 --> 
+  // we expect 9 connections, each with 3 sockets = 27 total sockets
+  const int conns_per_node = 3;
+  const int testtime_s = 10;
+
   config_t cfg{program.get<uint64_t>("id"),
                program.get<uint64_t>("global_id"),
                nodes,
                program.get<uint64_t>("system_size"),
                conns_per_node,
+               testtime_s,
                program.get<uint16_t>("-p"),
                program.get<uint64_t>("-n"),
                program.get<uint64_t>("-k"),
@@ -92,7 +101,11 @@ int main(int argc, char** argv) {
   std::uniform_int_distribution<int> val_dist(0,
                                               std::numeric_limits<int>::max());
   std::uniform_int_distribution<uint64_t> perc_dist(0, 100);
-  for (uint64_t i = 0; i < cfg.num_ops; ++i) {
+
+  workload.reserve(cfg.num_ops);
+  // shutdown command at the beginning of the workload
+  workload.push_back(op_bundle<int>{op_type::SHUTDOWN, {}});
+  for (uint64_t i = 0; i < cfg.num_ops - 1; ++i) {
     int r = perc_dist(rng);
     auto kv_0 = kv_pair<int, int>{key_dist(rng), val_dist(rng)};
     std::array<kv_pair<int, int>, MAX_MULTI> kv_list = {
@@ -115,6 +128,7 @@ int main(int argc, char** argv) {
       workload.push_back(op_bundle<int>{op_type::GET, kv_list, i});
     }
   }
+
 #ifdef WORKLOAD_DUMP
   // Dump workload for debugging
   for (size_t i = 0; i < 100; ++i) {
@@ -125,6 +139,7 @@ int main(int argc, char** argv) {
   LOGGING_INFO("I am node {} with global id {}", cfg.node_id, cfg.global_id);
   Worker worker(cfg, workload);
   worker.run();
+  worker.arrive_barrier();
 
   LOGGING_INFO("Done. Exiting...");
   return 0;
